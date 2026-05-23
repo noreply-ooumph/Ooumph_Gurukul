@@ -6,7 +6,7 @@ on:
 jobs:
   reply:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 16
 
     steps:
       - name: Checkout repo
