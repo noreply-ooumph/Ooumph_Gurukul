@@ -17,28 +17,31 @@ print(f"Logging in as {username}...")
 cl = Client()
 cl.delay_range = [2, 4]
 
-MAX_RETRIES = 2
+MAX_RETRIES = 3
 for attempt in range(1, MAX_RETRIES + 1):
     try:
         cl.login(username, password)
         print(f"Login OK  user_id={cl.user_id}")
         break
     except ChallengeUnknownStep as e:
-        print(f"\n[!] Instagram sent a Bloks/App challenge (attempt {attempt}/{MAX_RETRIES}).")
-        print("[!] ACTION REQUIRED:")
-        print("[!]   1. Open Instagram app on your phone")
-        print(f"[!]   2. Log in as @{username}")
-        print("[!]   3. You should see: 'Suspicious login attempt from a new device'")
-        print("[!]   4. Tap 'This was me' / 'Approve'")
-        print("[!]   5. Re-run the Login & Save Session workflow on GitHub Actions")
-        sys.exit(3)  # Exit code 3 = needs manual approval
+        if attempt < MAX_RETRIES:
+            print(f"\n[!] Instagram challenge sent to your phone app (attempt {attempt}/{MAX_RETRIES}).")
+            print(f"[!]   Open Instagram app as @{username}")
+            print(f"[!]   Tap 'This was me' on the suspicious login notification")
+            print(f"[!]   Waiting 90 seconds for you to approve...")
+            time.sleep(90)
+            print("[!]   Retrying login...")
+        else:
+            print(f"\n[!] All {MAX_RETRIES} attempts failed. Challenge not resolved.")
+            print(f"[!]   Open Instagram app as @{username} → approve the login → re-run login.yml")
+            sys.exit(3)
     except ChallengeRequired as e:
         print(f"[!] Challenge required (type: {type(e).__name__}) — attempt {attempt}")
         if attempt < MAX_RETRIES:
-            print("[!] Waiting 20s before retry...")
-            time.sleep(20)
+            print("[!] Waiting 30s before retry...")
+            time.sleep(30)
         else:
-            print("[!] All retries failed. Check phone/email for verification code.")
+            print("[!] All retries failed.")
             sys.exit(3)
     except Exception as e:
         print(f"[!] Login error: {e}")
