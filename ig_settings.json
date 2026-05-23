@@ -1,51 +1,43 @@
 {
-  "cookies": {
-    "sessionid": "67178598327%3AIq5tJQCGcgloY0%3A2%3AAYgCCsawvHtaif_wndnOPIMzsT-o40UMnQjiaTXHbQ",
-    "csrftoken": "",
-    "ds_user_id": "67178598327",
-    "mid": "ahGT9wABAAHJKW2hln0pBCS2wy65",
-    "ig_did": "",
-    "ig_nrcb": "1",
-    "datr": "f26c7b24-ee96-4538-9f4c-92586ffbf53b"
-  },
-  "user_agent": "Instagram 364.0.0.35.86 Android (26/8.0.0; 480dpi; 1080x1920; OnePlus; 6T Dev; devitron; qcom; en_US; 374010953)",
   "_instagrapi": {
     "uuids": {
-      "phone_id": "bb1d0fe9-8259-42d1-af96-f630419f056f",
-      "uuid": "227ef637-6d91-4dca-8be3-a7225ad36910",
-      "client_session_id": "ea4f8437-97aa-493e-b97b-6c25aed423ac",
-      "advertising_id": "d8860304-149b-4122-b98b-6fb3c7867511",
-      "android_device_id": "android-9f8d87878881d62e",
-      "request_id": "2963aa3a-3334-41c6-af24-92062689b5ee",
-      "tray_session_id": "11afd819-42eb-4f7f-b40b-63f8871d4f31"
+      "phone_id": "5853593d-6de6-4641-a54f-7af44b2a7cd1",
+      "uuid": "21172604-d68b-4448-aa3c-995dcc0bfde2",
+      "client_session_id": "f752b860-37a4-4a24-9658-054061ff79b8",
+      "advertising_id": "79578dcb-3b82-49d0-acfb-d70c13cd7cec",
+      "android_device_id": "android-6453921a3e394a19",
+      "request_id": "a8b538ca-76df-447b-a4fa-0995ab284c22",
+      "tray_session_id": "12ec35c5-b140-4af4-bc32-606644a0917f"
     },
-    "mid": "ahGx3QABAAE7_gzJ4AJ1U3VccqLm",
+    "mid": "ahHs4QABAAH9kpDsHC5of5-dVXSW",
     "ig_u_rur": null,
     "ig_www_claim": null,
     "authorization_data": {
       "ds_user_id": "67178598327",
-      "sessionid": "67178598327%3ASlaK6LuWfZQs7b%3A18%3AAYiZyViliImP3PLHjSac5zvh6YrrouUWkDQdCJIf-A"
+      "sessionid": "67178598327%3ADhbfMQ5yyiucRL%3A16%3AAYi8liKVSkZDCJhitqI49g2LcYIG46nmwuyeTmGKMg"
     },
     "cookies": {},
-    "last_login": 1779544555.8426762,
+    "last_login": 1779559669.4896767,
     "device_settings": {
-      "android_version": 26,
-      "android_release": "8.0.0",
+      "android_version": 34,
+      "android_release": "14",
       "dpi": "480dpi",
-      "resolution": "1080x1920",
-      "manufacturer": "OnePlus",
-      "device": "devitron",
-      "model": "6T Dev",
-      "cpu": "qcom",
-      "app_version": "364.0.0.35.86",
-      "version_code": "374010953",
-      "bloks_versioning_id": "8ccf54aad76788a6ca03ddfc33afcdcf692f2f5a3ba814ea73d5facba7fa2c2d"
+      "resolution": "1344x2992",
+      "manufacturer": "Google/google",
+      "device": "husky",
+      "model": "Pixel 8 Pro",
+      "cpu": "husky",
+      "app_version": "428.0.0.47.67",
+      "version_code": "961145276",
+      "bloks_versioning_id": "7189b949425f9bf80ea8bd880cf5a3080b292d9b1c4b38a18d112f7c4b71e7a8"
     },
-    "user_agent": "Instagram 364.0.0.35.86 Android (26/8.0.0; 480dpi; 1080x1920; OnePlus; 6T Dev; devitron; qcom; en_US; 374010953)",
+    "user_agent": "Instagram 428.0.0.47.67 Android (34/14; 480dpi; 1344x2992; Google/google; Pixel 8 Pro; husky; husky; en_US; 961145276)",
     "country": "US",
     "country_code": 1,
     "locale": "en_US",
     "timezone_offset": -14400,
+    "timezone_name": "GMT-04:00",
+    "push_disabled": true,
     "request_timeout": 1,
     "public_request_retries_count": 3,
     "public_request_retries_timeout": 2,
@@ -57,7 +49,10 @@
       502,
       503,
       504
-    ]
+    ],
+    "public_transport": "requests",
+    "public_transport_impersonate": "chrome136",
+    "tls_verify": true
   },
   "user_id": "67178598327"
 }
