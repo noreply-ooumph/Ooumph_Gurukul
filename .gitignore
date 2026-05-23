@@ -1,0 +1,7 @@
+# Never push these
+.env
+ig_settings.json
+generated_images/
+__pycache__/
+*.pyc
+downloads/

@@ -1,0 +1,51 @@
+name: Auto Reply Bot
+
+on:
+  workflow_dispatch:
+
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic groq instagrapi python-dotenv requests Pillow --quiet
+
+      - name: Write credentials
+        env:
+          IG_SETTINGS_JSON: ${{ secrets.IG_SETTINGS_JSON }}
+        run: |
+          printf 'IG_USERNAME=%s\nIG_PASSWORD=%s\nIG_SESSION_FILE=ig_settings.json\nANTHROPIC_API_KEY=%s\nGROQ_API_KEY=%s\n' \
+            '${{ secrets.IG_USERNAME }}' '${{ secrets.IG_PASSWORD }}' \
+            '${{ secrets.ANTHROPIC_API_KEY }}' '${{ secrets.GROQ_API_KEY }}' > .env
+          printf '%s' "$IG_SETTINGS_JSON" > ig_settings.json
+          python -c "import json; json.load(open('ig_settings.json')); print('ig_settings.json: valid JSON')"
+
+      - name: Run replier loop
+        run: python -u gh_replier_loop.py
+
+      - name: Save state back to repo
+        run: |
+          git config user.name  "gurukul-bot"
+          git config user.email "bot@ooumph.com"
+          git add replied_comments.json brain_memory.json ig_settings.json posts_list.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "bot: update reply state [skip ci]"
+          git push || true
+
+      - name: Trigger next run in 5 minutes
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          sleep 240
+          gh workflow run replier.yml --repo ${{ github.repository }} || true
