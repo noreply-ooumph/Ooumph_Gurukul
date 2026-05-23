@@ -1,4 +1,4 @@
-name: Auto Reply Bot
+﻿name: Auto Reply Bot
 
 on:
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
           git config user.email "bot@ooumph.com"
           git add -f replied_comments.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "bot: update reply state [skip ci]"
-          git pull --rebase origin main && git push
+          git stash 2>/dev/null || true; git pull --rebase origin main || true; git stash pop 2>/dev/null || true; git push
 
       - name: Trigger next run in 5 minutes
         env:
@@ -49,3 +49,4 @@ jobs:
         run: |
           sleep 10
           gh workflow run replier.yml --repo ${{ github.repository }} || true
+
