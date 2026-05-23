@@ -39,9 +39,9 @@ jobs:
         run: |
           git config user.name  "gurukul-bot"
           git config user.email "bot@ooumph.com"
-          git add replied_comments.json brain_memory.json ig_settings.json posts_list.json 2>/dev/null || true
+          git add -f replied_comments.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "bot: update reply state [skip ci]"
-          git push || true
+          git pull --rebase origin main && git push
 
       - name: Trigger next run in 5 minutes
         env:
