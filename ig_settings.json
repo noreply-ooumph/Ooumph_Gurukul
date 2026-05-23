@@ -1,0 +1,63 @@
+{
+  "cookies": {
+    "sessionid": "67178598327%3AIq5tJQCGcgloY0%3A2%3AAYgCCsawvHtaif_wndnOPIMzsT-o40UMnQjiaTXHbQ",
+    "csrftoken": "",
+    "ds_user_id": "67178598327",
+    "mid": "ahGT9wABAAHJKW2hln0pBCS2wy65",
+    "ig_did": "",
+    "ig_nrcb": "1",
+    "datr": "f26c7b24-ee96-4538-9f4c-92586ffbf53b"
+  },
+  "user_agent": "Instagram 364.0.0.35.86 Android (26/8.0.0; 480dpi; 1080x1920; OnePlus; 6T Dev; devitron; qcom; en_US; 374010953)",
+  "_instagrapi": {
+    "uuids": {
+      "phone_id": "bb1d0fe9-8259-42d1-af96-f630419f056f",
+      "uuid": "227ef637-6d91-4dca-8be3-a7225ad36910",
+      "client_session_id": "ea4f8437-97aa-493e-b97b-6c25aed423ac",
+      "advertising_id": "d8860304-149b-4122-b98b-6fb3c7867511",
+      "android_device_id": "android-9f8d87878881d62e",
+      "request_id": "2963aa3a-3334-41c6-af24-92062689b5ee",
+      "tray_session_id": "11afd819-42eb-4f7f-b40b-63f8871d4f31"
+    },
+    "mid": "ahGx3QABAAE7_gzJ4AJ1U3VccqLm",
+    "ig_u_rur": null,
+    "ig_www_claim": null,
+    "authorization_data": {
+      "ds_user_id": "67178598327",
+      "sessionid": "67178598327%3ASlaK6LuWfZQs7b%3A18%3AAYiZyViliImP3PLHjSac5zvh6YrrouUWkDQdCJIf-A"
+    },
+    "cookies": {},
+    "last_login": 1779544555.8426762,
+    "device_settings": {
+      "android_version": 26,
+      "android_release": "8.0.0",
+      "dpi": "480dpi",
+      "resolution": "1080x1920",
+      "manufacturer": "OnePlus",
+      "device": "devitron",
+      "model": "6T Dev",
+      "cpu": "qcom",
+      "app_version": "364.0.0.35.86",
+      "version_code": "374010953",
+      "bloks_versioning_id": "8ccf54aad76788a6ca03ddfc33afcdcf692f2f5a3ba814ea73d5facba7fa2c2d"
+    },
+    "user_agent": "Instagram 364.0.0.35.86 Android (26/8.0.0; 480dpi; 1080x1920; OnePlus; 6T Dev; devitron; qcom; en_US; 374010953)",
+    "country": "US",
+    "country_code": 1,
+    "locale": "en_US",
+    "timezone_offset": -14400,
+    "request_timeout": 1,
+    "public_request_retries_count": 3,
+    "public_request_retries_timeout": 2,
+    "session_retry_total": 3,
+    "session_retry_backoff_factor": 2,
+    "session_retry_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ]
+  },
+  "user_id": "67178598327"
+}
