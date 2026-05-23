@@ -10,18 +10,18 @@ def pick_hashtags(topic: str, count: int = 25) -> list:
     t = topic.lower()
     pool = []
     if any(w in t for w in ["gurukul","vedic","upanishad","ancient","wisdom","gita","mahab","ramay","sanskriti"]):
-        pool += HASHTAG_POOLS["india"]
+        pool += HASHTAG_POOLS.get("india", [])
     if any(w in t for w in ["study","learn","course","skill","exam","student","college","school"]):
-        pool += HASHTAG_POOLS["education"]
+        pool += HASHTAG_POOLS.get("education", [])
     if any(w in t for w in ["motivat","mindset","habit","discipline","success","goal","growth"]):
-        pool += HASHTAG_POOLS["motivation"]
+        pool += HASHTAG_POOLS.get("motivation", [])
     if any(w in t for w in ["youth","career","job","purpose","young","future"]):
-        pool += HASHTAG_POOLS["youth"]
+        pool += HASHTAG_POOLS.get("youth", [])
     if any(w in t for w in ["philosoph","wisdom","conscious","soul","spirit","meaning","life"]):
-        pool += HASHTAG_POOLS["wisdom"]
+        pool += HASHTAG_POOLS.get("wisdom", [])
     if any(w in t for w in ["ai","artificial","tech","digital","online","app","tool"]):
-        pool += HASHTAG_POOLS["ai"]
-    pool += HASHTAG_POOLS["general"]
+        pool += HASHTAG_POOLS.get("ai", [])
+    pool += HASHTAG_POOLS.get("general", [])
     seen, out = set(), []
     for tag in pool:
         if tag not in seen:
@@ -35,16 +35,16 @@ def generate_seo_caption(client, topic: str, pillar: str) -> str:
     strategy = mem.get("strategy_notes", "")
 
     resp = client.messages.create(
-        model="claude-sonnet-4-5",
-        max_tokens=600,
+        model="claude-haiku-4-5-20251001",
+        max_tokens=700,
         system=(
             "You are an expert Instagram SEO and AEO content writer for thegurukul.online, "
-            f"an education and wisdom account. Niche: {ACCOUNT_NICHE}\n\n"
-            "SEO Rules: First line = powerful hook (shown in feed before 'more'). "
-            "Include 2-3 natural keyword phrases. Short paragraphs.\n\n"
-            "AEO Rules (for Google SGE, Perplexity, ChatGPT): Include a direct factual statement early. "
-            "Structure: Hook → Wisdom/Facts → Story → Insight → CTA.\n\n"
-            "Format: 150-250 words. Natural emojis. End with 1 engaging question. NO hashtags."
+            f"an online education and ancient Indian wisdom account. Niche: {ACCOUNT_NICHE}\n\n"
+            "SEO Rules: First line = powerful hook. Include 2-3 natural keyword phrases. Short paragraphs.\n\n"
+            "AEO Rules: Include a direct factual/wisdom statement early. "
+            "Structure: Hook → Wisdom/Insight → Practical takeaway → CTA.\n\n"
+            "Tone: knowledgeable mentor — warm, grounded, inspiring. "
+            "Format: 150-250 words. Tasteful emojis. End with 1 engaging question. NO hashtags."
         ),
         messages=[{"role": "user", "content": (
             f"Topic: {topic}\nPillar: {pillar}\nStrategy: {strategy}\n\nWrite the Instagram caption:"
@@ -61,7 +61,7 @@ def generate_image_prompt(client, topic: str) -> str:
         messages=[{"role": "user", "content": (
             f"Topic: {topic}\n"
             "Style: cinematic, inspiring, warm golden light, ancient Indian aesthetic meets modern design, "
-            "motivational, detailed, suitable for an education and wisdom Instagram account. Square 1:1 composition. No text."
+            "motivational, hyper-detailed, square 1:1 composition. No text in image."
         )}]
     )
     return resp.content[0].text.strip()
