@@ -35,29 +35,41 @@ jobs:
       - name: Run replier loop
         id: replier
         run: |
+          set +e
           python -u gh_replier_loop.py
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          EXIT=$?
+          echo "exit_code=$EXIT" >> $GITHUB_OUTPUT
+          exit $EXIT
         continue-on-error: true
 
-      - name: Save state back to repo
+      - name: Save replied state + updated session
         run: |
           git config user.name  "gurukul-bot"
           git config user.email "bot@ooumph.com"
-          git add -f replied_comments.json 2>/dev/null || true
+          git add -f replied_comments.json ig_settings.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "bot: update reply state [skip ci]"
-          git stash 2>/dev/null || true; git pull --rebase origin main || true; git stash pop 2>/dev/null || true; git push || true
+          git stash 2>/dev/null || true
+          git pull --rebase origin main || true
+          git stash pop 2>/dev/null || true
+          git push || true
+
+      - name: Update session secret with refreshed tokens
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          python -c "import json; d=json.load(open('ig_settings.json')); exit(0 if '_instagrapi' in d else 1)" 2>/dev/null && \
+            gh secret set IG_SETTINGS_JSON --repo ${{ github.repository }} < ig_settings.json || true
 
       - name: Trigger next run OR refresh login on session failure
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           EXIT_CODE="${{ steps.replier.outputs.exit_code }}"
-          # exit code 2 = session expired — trigger login refresh first
           if [ "$EXIT_CODE" = "2" ]; then
-            echo "Session expired — triggering login.yml to refresh session"
+            echo "Session expired — triggering login.yml to refresh"
             gh workflow run login.yml --repo ${{ github.repository }} || true
           else
-            echo "Normal run — triggering next replier cycle"
+            echo "Triggering next replier cycle"
             sleep 10
             gh workflow run replier.yml --repo ${{ github.repository }} || true
           fi
