@@ -37,13 +37,11 @@ def get_client() -> Client:
     cl = Client()
     cl.delay_range = [1, 3]
     settings = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
-    # Check if this is an instagrapi session
     if "_instagrapi" in settings:
+        # Restore saved session — skip re-login to avoid cloud-IP challenge
         cl.set_settings(settings["_instagrapi"])
-        cl.login(os.environ.get("IG_USERNAME", ACCOUNT_USERNAME),
-                 os.environ.get("IG_PASSWORD", ""))
+        print(f"  Session loaded for user_id={settings.get('user_id', '?')}")
     else:
-        # Web cookies — try instagrapi login with password
         cl.login(os.environ.get("IG_USERNAME", ACCOUNT_USERNAME),
                  os.environ.get("IG_PASSWORD", ""))
     return cl
