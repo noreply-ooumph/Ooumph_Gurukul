@@ -1,7 +1,6 @@
 """
 GitHub Actions replier loop — uses instagrapi mobile API.
 Runs 5 checks x 1 minute apart = 5 min window per run.
-Self-triggers next run after 4 min sleep.
 """
 import sys, os, time, json, random
 sys.path.insert(0, os.path.dirname(__file__))
@@ -12,12 +11,12 @@ load_dotenv(Path(__file__).parent / ".env", override=True)
 
 import anthropic
 from instagrapi import Client
-from instagrapi.exceptions import LoginRequired, ChallengeRequired, ClientError
+from instagrapi.exceptions import LoginRequired, ChallengeRequired
 
 from ig_brain.config import ANTHROPIC_KEY, ACCOUNT_USERNAME, ACCOUNT_USER_ID, REPLY_SLEEP_MIN, REPLY_SLEEP_MAX, REPLIED_FILE
 from ig_brain.replier import load_replied, save_replied, generate_reply
 
-SETTINGS_FILE = Path(__file__).parent / "ig_settings.json"
+SETTINGS_FILE   = Path(__file__).parent / "ig_settings.json"
 POSTS_LIST_FILE = Path(__file__).parent / "posts_list.json"
 
 REPLY_SYSTEM = """You are the voice behind thegurukul.online, an Instagram page dedicated to online education, ancient Indian wisdom, and modern learning for students and youth.
@@ -34,23 +33,61 @@ Reply to a comment on one of your posts. Rules:
 """
 
 def get_client() -> Client:
+    """Load session from ig_settings.json. Validate it. Fall back to login if expired."""
     cl = Client()
     cl.delay_range = [1, 3]
+
+    if not SETTINGS_FILE.exists():
+        print("  ERROR: ig_settings.json not found — cannot authenticate")
+        sys.exit(1)
+
     settings = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
+
     if "_instagrapi" in settings:
-        # Restore saved session — skip re-login to avoid cloud-IP challenge
         cl.set_settings(settings["_instagrapi"])
-        print(f"  Session loaded for user_id={settings.get('user_id', '?')}")
+        uid = settings.get("user_id", "?")
+        print(f"  Session loaded for user_id={uid}")
+
+        # Validate session with a lightweight API call
+        try:
+            info = cl.account_info()
+            print(f"  Session valid — logged in as @{info.username}")
+            return cl
+        except (LoginRequired, ChallengeRequired) as e:
+            print(f"  Session EXPIRED or challenged: {e}")
+            print("  --> Trigger login.yml manually or run do_login.py locally")
+            print("  --> Then update IG_SETTINGS_JSON secret")
+            sys.exit(2)
+        except Exception as e:
+            print(f"  Session validation warning: {e} — continuing anyway")
+            return cl
     else:
-        cl.login(os.environ.get("IG_USERNAME", ACCOUNT_USERNAME),
-                 os.environ.get("IG_PASSWORD", ""))
-    return cl
+        # Fallback: try direct login (may fail from cloud IP)
+        username = os.environ.get("IG_USERNAME", ACCOUNT_USERNAME)
+        password = os.environ.get("IG_PASSWORD", "")
+        print(f"  No _instagrapi session found — attempting login as {username}")
+        try:
+            cl.login(username, password)
+            print(f"  Login OK user_id={cl.user_id}")
+            # Save new session back
+            data = {"_instagrapi": cl.get_settings(), "user_id": str(cl.user_id)}
+            SETTINGS_FILE.write_text(json.dumps(data, indent=2))
+            print("  Session saved to ig_settings.json")
+            return cl
+        except (ChallengeRequired, LoginRequired) as e:
+            print(f"  LOGIN FAILED (challenge from cloud IP): {e}")
+            print("  --> Trigger login.yml workflow to create a cloud session")
+            sys.exit(2)
+        except Exception as e:
+            print(f"  Login error: {e}")
+            sys.exit(1)
 
 def load_posts() -> list:
     if POSTS_LIST_FILE.exists():
         posts = json.loads(POSTS_LIST_FILE.read_text(encoding="utf-8"))
         print(f"  Loaded {len(posts)} posts from posts_list.json")
         return posts
+    print("  WARNING: posts_list.json not found — no posts to check")
     return []
 
 def generate_reply_text(client_ai, comment: str, caption: str) -> str:
@@ -62,7 +99,6 @@ def generate_reply_text(client_ai, comment: str, caption: str) -> str:
     )
     return resp.content[0].text.strip().strip('"').strip("'")
 
-# ── Main loop ──────────────────────────────────────────────
 client_ai = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
 CHECKS = 5
 INTERVAL = 60
@@ -71,10 +107,8 @@ print(f"[REPLIER] Starting: {CHECKS} checks x {INTERVAL}s")
 
 try:
     cl = get_client()
-    print(f"  Logged in as user_id={cl.user_id}")
-except Exception as e:
-    print(f"  Login failed: {e}")
-    sys.exit(1)
+except SystemExit as e:
+    sys.exit(e.code)
 
 for check_num in range(1, CHECKS + 1):
     print(f"\n--- Check {check_num}/{CHECKS} ---")
@@ -86,7 +120,6 @@ for check_num in range(1, CHECKS + 1):
         print(f"  Post {post['code']}...", end="")
         try:
             comments = cl.media_comments(post["id"], amount=50)
-            # Filter: skip own, skip @mentions of us, skip already replied
             fresh = []
             for c in comments:
                 uid  = str(c.user.pk)
@@ -102,6 +135,7 @@ for check_num in range(1, CHECKS + 1):
                     try:
                         children = cl.media_comment_replies(post["id"], str(c.pk))
                         if any(str(ch.user.pk) == str(ACCOUNT_USER_ID) for ch in children):
+                            replied.add(str(c.pk))  # Mark as replied so we skip next time
                             continue
                     except Exception:
                         pass
@@ -125,8 +159,8 @@ for check_num in range(1, CHECKS + 1):
 
         except (LoginRequired, ChallengeRequired) as e:
             print(f"\n  SESSION ERROR: {e}")
-            print("  Need fresh login — update IG_SETTINGS_JSON secret")
-            break
+            print("  Session expired mid-run — trigger login.yml to refresh")
+            sys.exit(2)
         except Exception as e:
             print(f" error: {e}")
 

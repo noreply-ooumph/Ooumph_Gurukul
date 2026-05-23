@@ -1,4 +1,4 @@
-﻿name: Auto Reply Bot
+name: Auto Reply Bot
 
 on:
   workflow_dispatch:
@@ -33,7 +33,11 @@ jobs:
           python -c "import json; json.load(open('ig_settings.json')); print('ig_settings.json: valid JSON')"
 
       - name: Run replier loop
-        run: python -u gh_replier_loop.py
+        id: replier
+        run: |
+          python -u gh_replier_loop.py
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
 
       - name: Save state back to repo
         run: |
@@ -41,12 +45,19 @@ jobs:
           git config user.email "bot@ooumph.com"
           git add -f replied_comments.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "bot: update reply state [skip ci]"
-          git stash 2>/dev/null || true; git pull --rebase origin main || true; git stash pop 2>/dev/null || true; git push
+          git stash 2>/dev/null || true; git pull --rebase origin main || true; git stash pop 2>/dev/null || true; git push || true
 
-      - name: Trigger next run in 5 minutes
+      - name: Trigger next run OR refresh login on session failure
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          sleep 10
-          gh workflow run replier.yml --repo ${{ github.repository }} || true
-
+          EXIT_CODE="${{ steps.replier.outputs.exit_code }}"
+          # exit code 2 = session expired — trigger login refresh first
+          if [ "$EXIT_CODE" = "2" ]; then
+            echo "Session expired — triggering login.yml to refresh session"
+            gh workflow run login.yml --repo ${{ github.repository }} || true
+          else
+            echo "Normal run — triggering next replier cycle"
+            sleep 10
+            gh workflow run replier.yml --repo ${{ github.repository }} || true
+          fi
