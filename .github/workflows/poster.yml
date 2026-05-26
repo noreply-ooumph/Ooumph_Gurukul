@@ -8,7 +8,7 @@ on:
 jobs:
   post:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repo
@@ -22,50 +22,38 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install anthropic groq instagrapi python-dotenv requests Pillow --quiet
+        run: pip install groq python-dotenv requests Pillow --quiet
 
       - name: Write credentials
-        env:
-          IG_SETTINGS_JSON: ${{ secrets.IG_SETTINGS_JSON }}
         run: |
-          printf 'IG_USERNAME=%s\nIG_PASSWORD=%s\nIG_SESSION_FILE=ig_settings.json\nANTHROPIC_API_KEY=%s\nGROQ_API_KEY=%s\n' \
-            '${{ secrets.IG_USERNAME }}' '${{ secrets.IG_PASSWORD }}' \
-            '${{ secrets.ANTHROPIC_API_KEY }}' '${{ secrets.GROQ_API_KEY }}' > .env
-          printf '%s' "$IG_SETTINGS_JSON" > ig_settings.json
-          python -c "import json; json.load(open('ig_settings.json')); print('ig_settings.json: valid JSON')"
+          printf 'GROQ_API_KEY=%s\nGRAPH_PAGE_TOKEN=%s\nGRAPH_IG_USER_ID=%s\n' \
+            '${{ secrets.GROQ_API_KEY }}' \
+            '${{ secrets.GRAPH_PAGE_TOKEN }}' \
+            '${{ secrets.GRAPH_IG_USER_ID }}' > .env
 
-      - name: Run poster
-        id: poster
-        run: |
-          set +e
-          python -u pa_poster.py
-          EXIT=$?
-          echo "exit_code=$EXIT" >> $GITHUB_OUTPUT
-          exit $EXIT
-        continue-on-error: true
+      - name: Generate content and image
+        run: python graph_poster.py --step generate
 
-      - name: Save state back to repo
+      - name: Commit image to repo
         run: |
           git config user.name  "gurukul-bot"
           git config user.email "bot@ooumph.com"
-          git add -f posted_content.json content_plan.json brain_memory.json ig_settings.json posts_list.json 2>/dev/null || true
-          git diff --cached --quiet || git commit -m "bot: new post published [skip ci]"
-          git stash 2>/dev/null || true
+          git add -f generated_images/pending_post.jpg pending_post.json
+          git diff --cached --quiet || git commit -m "bot: pending post image [skip ci]"
           git pull --rebase origin main || true
-          git stash pop 2>/dev/null || true
           git push || true
 
-      - name: Update session secret with refreshed tokens
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          python -c "import json; d=json.load(open('ig_settings.json')); exit(0 if '_instagrapi' in d else 1)" 2>/dev/null && \
-            gh secret set IG_SETTINGS_JSON --repo ${{ github.repository }} < ig_settings.json || true
+      - name: Wait for GitHub CDN
+        run: sleep 20
 
-      - name: Trigger login refresh on session failure
-        if: steps.poster.outputs.exit_code == '2'
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+      - name: Publish to Instagram via Graph API
+        run: python graph_poster.py --step publish
+
+      - name: Save state
         run: |
-          echo "Poster session expired — triggering login.yml"
-          gh workflow run login.yml --repo ${{ github.repository }} || true
+          git config user.name  "gurukul-bot"
+          git config user.email "bot@ooumph.com"
+          git add -f posted_content.json brain_memory.json content_plan.json posts_list.json
+          git diff --cached --quiet || git commit -m "bot: post published [skip ci]"
+          git pull --rebase origin main || true
+          git push || true
