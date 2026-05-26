@@ -2,7 +2,7 @@ name: Auto Poster Bot
 
 on:
   schedule:
-    - cron: '0 3,7,12,15 * * *'   # UTC = 9am, 1pm, 6pm, 9pm IST
+    - cron: '0 4 * * *'   # UTC 4am = 9:30am IST
   workflow_dispatch:
 
 jobs:
