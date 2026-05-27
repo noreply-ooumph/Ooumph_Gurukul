@@ -1,0 +1,41 @@
+name: Cross-Poster (All Accounts)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cross-post:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install groq python-dotenv requests --quiet
+
+      - name: Write .env
+        run: |
+          cat > .env <<'ENVEOF'
+          GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
+          GURUKUL_TOKEN=${{ secrets.GURUKUL_TOKEN }}
+          GURUKUL_IG_ID=${{ secrets.GURUKUL_IG_ID }}
+          OFFICIAL_TOKEN=${{ secrets.OFFICIAL_TOKEN }}
+          OFFICIAL_IG_ID=${{ secrets.OFFICIAL_IG_ID }}
+          VISTAS_TOKEN=${{ secrets.VISTAS_TOKEN }}
+          VISTAS_IG_ID=${{ secrets.VISTAS_IG_ID }}
+          MUGGED_TOKEN=${{ secrets.MUGGED_TOKEN }}
+          MUGGED_IG_ID=${{ secrets.MUGGED_IG_ID }}
+          ENVEOF
+
+      - name: Run Cross-Poster
+        run: python cross_poster.py
